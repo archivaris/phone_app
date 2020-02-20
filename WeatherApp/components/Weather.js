@@ -6,7 +6,7 @@ import {weatherConditions} from '../utils/WeatherConditions';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 
 
-const Weather = ({weather, temperature, min_temperature, max_temperature, feels_like_temp, wind_speed,bycity}) => {
+const Weather = ({weather, temperature, min_temperature, max_temperature, feels_like_temp, wind_speed,bycity,uv}) => {
     return (
         <View style={[styles.weatherContainer, {backgroundColor: weatherConditions[weather].color}]}>
             <View style={styles.headerContainer}>
@@ -22,6 +22,9 @@ const Weather = ({weather, temperature, min_temperature, max_temperature, feels_
             <View style={styles.leftContainer}>
                 <Text style={styles.subtitle}>Feels like: {feels_like_temp}˚</Text>
             </View>
+            <View style={styles.leftContainer}>
+                <Text style={styles.subtitle}>UV exposure: {uv}˚</Text>
+            </View>
 
             <TouchableWithoutFeedback onPress={() => null}>
                 <GooglePlacesAutocomplete
@@ -35,8 +38,8 @@ const Weather = ({weather, temperature, min_temperature, max_temperature, feels_
                     fetchDetails={true}
                     renderDescription={row => row.description} // custom description render
                     onPress={(data, details = null) => { // 'details' is provided when fetchDetails = true
-                           console.log(data);
                         bycity(data.terms[0].value);
+                        console.log(details);
                     }}
                     getDefaultValue={() => ''}
                     query={{
@@ -58,8 +61,6 @@ const Weather = ({weather, temperature, min_temperature, max_temperature, feels_
                             color: '#1faadb'
                         }
                     }}
-                    // currentLocation={true}
-                    // currentLocationLabel="Current location"
                     nearbyPlacesAPI='GooglePlacesSearch'
                     GoogleReverseGeocodingQuery={{}}
                     GooglePlacesSearchQuery={{
@@ -71,7 +72,7 @@ const Weather = ({weather, temperature, min_temperature, max_temperature, feels_
                     }}
                     filterReverseGeocodingByTypes={['locality', 'administrative_area_level_3']}
                     debounce={200}
-                    renderRightButton={() => <Text>Search by city</Text>}
+                    renderRightButton={() => <Text style={styles.subtitle}>Search by city</Text>}
                 />
             </TouchableWithoutFeedback>
 
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
         marginLeft: 0,
         marginRight: 0,
         height: 38,
-        color: '#5d5d5d',
+        color: '#ffffff',
         fontSize: 16
     },
     predefinedPlacesDescription: {
