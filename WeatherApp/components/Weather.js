@@ -25,7 +25,7 @@ const Weather = ({weather, temperature, min_temperature, max_temperature, feels_
             <View style={styles.leftContainer}>
                 <Text style={styles.subtitle}>UV exposure: {uv}˚</Text>
             </View>
-
+            <View style={styles.headerContainer}>
             <TouchableWithoutFeedback onPress={() => null}>
                 <GooglePlacesAutocomplete
                     on
@@ -75,7 +75,7 @@ const Weather = ({weather, temperature, min_temperature, max_temperature, feels_
                     renderRightButton={() => <Text style={styles.subtitle}>Search by city</Text>}
                 />
             </TouchableWithoutFeedback>
-
+            </View>
             <View style={styles.bodyContainer}>
                 <Text style={styles.title}>{weatherConditions[weather].title}</Text>
                 <Text style={styles.subtitle}>{weatherConditions[weather].subtitle}</Text>
@@ -122,15 +122,15 @@ const styles = StyleSheet.create({
     leftContainer: {
         flex: 1,
         paddingLeft: 100,
-        marginBottom: -50,
+        marginBottom: -25,
         marginTop: -70,
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-around'
+        justifyContent: 'space-around',
     },
     tempText: {
         fontSize: 72,
-        color: '#fff'
+        color: '#fff',
     },
     bodyContainer: {
         flex: 2,

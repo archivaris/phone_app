@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Dimensions, Share, StyleSheet, Text, View} from 'react-native';
+import {Alert, Button, Dimensions, Share, StyleSheet, Text, View} from 'react-native';
 import Weather from './components/Weather';
 import {API_KEY} from './utils/APIKEY';
 
@@ -26,7 +26,7 @@ export default class App extends React.Component {
     };
 
     speak = () => {
-        var thingToSay = 'Fuck you,  ' + this.state.weatherCondition;
+        var thingToSay = 'You should expect ,  ' + this.state.weatherCondition + ' today.';
         Speech.speak(thingToSay);
     };
 
@@ -57,7 +57,7 @@ export default class App extends React.Component {
         navigator.geolocation.getCurrentPosition(
             position => {
                 this.fetchWeather(position.coords.latitude, position.coords.longitude);
-                this.fetchUV(position.coords.latitude, position.coords.longitude);
+                // this.fetchUV(position.coords.latitude, position.coords.longitude);
             },
             error => {
                 this.setState({
@@ -66,7 +66,6 @@ export default class App extends React.Component {
             }
         );
     }
-
 
     fetchWeather(lat, long) {
         fetch(
@@ -83,21 +82,38 @@ export default class App extends React.Component {
                     weatherCondition: json.weather[0].main,
                     isLoading: false,
                 })
-            });
+            }).then(() => {
+            fetch(
+                `http://api.openweathermap.org/data/2.5/uvi?appid=${API_KEY}&lat=${lat}&lon=${long} `
+            ).then(resp => resp.json())
+                .then(json => {
+                    this.setState({
+                        uv: json.value
+                    });
+                })
+        });
     }
 
-    fetchUV(lat, long) {
-        fetch(
-            `http://api.openweathermap.org/data/2.5/uvi?appid=${API_KEY}&lat=${lat}&lon=${long} `
-        ).then(resp => resp.json())
-            .then(json => {
-                this.setState({
-                    uv: json.value
-                });
-            })
-    }
+    // fetchCityUV(city) {
+    //
+    // }
 
-    fetchCityUV(city) {
+
+    _showAlert = () => {
+        Alert.alert(
+            'IMPORTANT',
+            'Dummy alert.',
+            [
+                {text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
+                {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+                {text: 'OK', onPress: () => console.log('OK Pressed')},
+            ],
+            {cancelable: false}
+        )
+    };
+
+
+    fetchWeatherbyCity(city) {
         fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`).then(resp => resp.json())
             .then(json => {
                 this.setState({
@@ -112,8 +128,8 @@ export default class App extends React.Component {
                     isLoading: false,
                 });
             }).then(() => {
-                const url = `http://api.openweathermap.org/data/2.5/uvi?appid=${API_KEY}&lat=${this.state.coord_lat}&lon=${this.state.coord_long}`;
-                console.log(url);
+            const url = `http://api.openweathermap.org/data/2.5/uvi?appid=${API_KEY}&lat=${this.state.coord_lat}&lon=${this.state.coord_long}`;
+            console.log(url);
             fetch(url).then(resp => resp.json())
                 .then(json => {
                     console.log(json.value);
@@ -124,27 +140,6 @@ export default class App extends React.Component {
         });
     }
 
-
-    fetchWeatherbyCity(city) {
-        fetch(
-            `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
-        )
-            .then(resp => resp.json())
-            .then(json => {
-                this.setState({
-                    coord_lat: json.coord.lat,
-                    coord_long: json.coord.lon,
-                    temperature: json.main.temp,
-                    min_temperature: json.main.temp_min,
-                    max_temperature: json.main.temp_max,
-                    feels_like_temp: json.main.feels_like,
-                    wind_speed: json.wind.speed,
-                    weatherCondition: json.weather[0].main,
-                    isLoading: false,
-                })
-            });
-    }
-
     render() {
         const {temperature, weatherCondition, isLoading, min_temperature, max_temperature, feels_like_temp, wind_speed, uv} = this.state;
         return (
@@ -152,15 +147,17 @@ export default class App extends React.Component {
                 {isLoading ? <Text>Fetching Weather Data</Text> :
                     <Weather weather={weatherCondition} temperature={temperature} min_temperature={min_temperature}
                              max_temperature={max_temperature} feels_like_temp={feels_like_temp}
-                             wind_speed={wind_speed} bycity={this.fetchWeatherbyCity.bind(this)} uv={this.fetchCityUV.bind(this)}/>
+                             wind_speed={wind_speed} bycity={this.fetchWeatherbyCity.bind(this)} uv={uv}/>
                 }
-                <Button onPress={this.onShare} title="Share"/>
-                <Button title={'refresh'} onPress={() => this._onRefresh()}/>
-                <Button title="Press to hear some words" onPress={this.speak}/>
+                <Button onPress={this.onShare} title="Share App"/>
+                <Button title={'refresh local weather'} onPress={() => this._onRefresh()}/>
+                <Button title="What's the weather like?" onPress={this.speak}/>
+                <Button title='Alert' onPress={this._showAlert}/>
             </View>
         );
     }
 }
+
 
 const {width, height} = Dimensions.get('window');
 
@@ -170,5 +167,15 @@ const styles = StyleSheet.create({
         // width,
         // height,
         backgroundColor: '#ffffff'
+    }, button: {
+        margin: 24,
+        padding: 40,
+        borderRadius: 15,
+        borderWidth: 1,
+        borderColor: "transparent",
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color: '#34495e',
+        backgroundColor: '#ff6666'
     },
 });
