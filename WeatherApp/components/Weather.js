@@ -5,13 +5,12 @@ import PropTypes from 'prop-types';
 import {weatherConditions} from '../utils/WeatherConditions';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 
-
-const Weather = ({weather, temperature, min_temperature, max_temperature, feels_like_temp, wind_speed,bycity,uv}) => {
+const Weather = ({weather, temperature, min_temperature, max_temperature, feels_like_temp, wind_speed, bycity, uv, next_temp}) => {
     return (
         <View style={[styles.weatherContainer, {backgroundColor: weatherConditions[weather].color}]}>
             <View style={styles.headerContainer}>
                 <MaterialCommunityIcons size={72} name={weatherConditions[weather].icon} color={'#fff'}/>
-                <Text style={styles.tempText}>{temperature}</Text>
+                <Text style={styles.tempText}>{temperature}˚</Text>
             </View>
             <View style={styles.leftContainer}>
                 <Text style={styles.subtitle}>Max today: {max_temperature}˚</Text>
@@ -25,56 +24,58 @@ const Weather = ({weather, temperature, min_temperature, max_temperature, feels_
             <View style={styles.leftContainer}>
                 <Text style={styles.subtitle}>UV exposure: {uv}˚</Text>
             </View>
+            <View style={styles.leftContainer}>
+                <Text style={styles.subtitle}>Tomorrow: {next_temp}˚</Text>
+            </View>
             <View style={styles.headerContainer}>
-            <TouchableWithoutFeedback onPress={() => null}>
-                <GooglePlacesAutocomplete
-                    on
-                    placeholder='Search'
-                    minLength={2}
-                    autoFocus={false}
-                    returnKeyType={'search'}
-                    keyboardAppearance={'light'}
-                    listViewDisplayed='auto'    // true/false/undefined
-                    fetchDetails={true}
-                    renderDescription={row => row.description} // custom description render
-                    onPress={(data, details = null) => { // 'details' is provided when fetchDetails = true
-                        bycity(data.terms[0].value);
-                        console.log(details);
-                    }}
-                    getDefaultValue={() => ''}
-                    query={{
-                        // available options: https://developers.google.com/places/web-service/autocomplete
-                        key: 'AIzaSyDonSRdX0d766vT2rJq5o0-T23rEhSvdRU',
-                        language: 'en',
-                        types: '(cities)'
-                    }}
-                    styles={{
-                        textInputContainer: {
-                            width: '100%',
-                        },
-                        description: {
-                            fontWeight: 'bold',
-                            color: 'white',
+                <TouchableWithoutFeedback onPress={() => null}>
+                    <GooglePlacesAutocomplete
+                        on
+                        placeholder='Search'
+                        minLength={2}
+                        autoFocus={false}
+                        returnKeyType={'search'}
+                        keyboardAppearance={'light'}
+                        listViewDisplayed='auto'    // true/false/undefined
+                        fetchDetails={true}
+                        renderDescription={row => row.description} // custom description render
+                        onPress={(data, details = null) => { // 'details' is provided when fetchDetails = true
+                            bycity(data.terms[0].value);
+                        }}
+                        getDefaultValue={() => ''}
+                        query={{
+                            // available options: https://developers.google.com/places/web-service/autocomplete
+                            key: 'AIzaSyDonSRdX0d766vT2rJq5o0-T23rEhSvdRU',
+                            language: 'en',
+                            types: '(cities)'
+                        }}
+                        styles={{
+                            textInputContainer: {
+                                width: '100%',
+                            },
+                            description: {
+                                fontWeight: 'bold',
+                                color: 'white',
 
-                        },
-                        predefinedPlacesDescription: {
-                            color: '#1faadb'
-                        }
-                    }}
-                    nearbyPlacesAPI='GooglePlacesSearch'
-                    GoogleReverseGeocodingQuery={{}}
-                    GooglePlacesSearchQuery={{
-                        rankby: 'distance',
-                        type: 'cafe'
-                    }}
-                    GooglePlacesDetailsQuery={{
-                        fields: 'formatted_address',
-                    }}
-                    filterReverseGeocodingByTypes={['locality', 'administrative_area_level_3']}
-                    debounce={200}
-                    renderRightButton={() => <Text style={styles.subtitle}>Search by city</Text>}
-                />
-            </TouchableWithoutFeedback>
+                            },
+                            predefinedPlacesDescription: {
+                                color: '#1faadb'
+                            }
+                        }}
+                        nearbyPlacesAPI='GooglePlacesSearch'
+                        GoogleReverseGeocodingQuery={{}}
+                        GooglePlacesSearchQuery={{
+                            rankby: 'distance',
+                            type: 'cafe'
+                        }}
+                        GooglePlacesDetailsQuery={{
+                            fields: 'formatted_address',
+                        }}
+                        filterReverseGeocodingByTypes={['locality', 'administrative_area_level_3']}
+                        debounce={200}
+                        renderRightButton={() => <Text style={styles.subtitle}>Search by city</Text>}
+                    />
+                </TouchableWithoutFeedback>
             </View>
             <View style={styles.bodyContainer}>
                 <Text style={styles.title}>{weatherConditions[weather].title}</Text>
@@ -90,7 +91,6 @@ Weather.propTypes = {
     weather: PropTypes.string
 };
 const {width, height} = Dimensions.get('window');
-
 const styles = StyleSheet.create({
 
     textInputContainer: {
@@ -148,6 +148,4 @@ const styles = StyleSheet.create({
         color: '#fff'
     }
 });
-
-
 export default Weather;

@@ -23,7 +23,6 @@ export const weatherConditions = {
         subtitle: 'So it begins...',
         icon: 'weather-cloudy'
     },
-
     Snow: {
         color: '#00d2ff',
         title: 'Snow',

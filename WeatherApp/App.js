@@ -2,12 +2,9 @@ import React from 'react';
 import {Alert, Button, Dimensions, Share, StyleSheet, Text, View} from 'react-native';
 import Weather from './components/Weather';
 import {API_KEY} from './utils/APIKEY';
-
-
 import * as Speech from 'expo-speech';
 
 window.yellowbox = false;
-
 export default class App extends React.Component {
     state = {
         token: '',
@@ -23,13 +20,12 @@ export default class App extends React.Component {
         error: null,
         refreshing: false,
         uv: null,
+        next_temp: null,
     };
-
     speak = () => {
         var thingToSay = 'You should expect ,  ' + this.state.weatherCondition + ' today.';
         Speech.speak(thingToSay);
     };
-
     onShare = async () => {
         try {
             const result = await Share.share({
@@ -38,10 +34,9 @@ export default class App extends React.Component {
                 title: 'Wow, check this app out!'
             },);
         } catch (error) {
-            alert(error.message);
+            Alert.alert(error.message);
         }
     };
-
     _onRefresh = () => {
         this.setState({refreshing: true});
         navigator.geolocation.getCurrentPosition(
@@ -53,11 +48,9 @@ export default class App extends React.Component {
     };
 
     componentDidMount() {
-
         navigator.geolocation.getCurrentPosition(
             position => {
                 this.fetchWeather(position.coords.latitude, position.coords.longitude);
-                // this.fetchUV(position.coords.latitude, position.coords.longitude);
             },
             error => {
                 this.setState({
@@ -91,18 +84,21 @@ export default class App extends React.Component {
                         uv: json.value
                     });
                 })
-        });
+        }).then(() => {
+            fetch(`http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${long}&appid=${API_KEY}&units=metric`
+            ).then(resp => resp.json())
+                .then(json => {
+                    this.setState({
+                        next_temp: json.list[13].main.temp
+                    })
+                });
+        })
     }
-
-    // fetchCityUV(city) {
-    //
-    // }
-
 
     _showAlert = () => {
         Alert.alert(
             'IMPORTANT',
-            'Dummy alert.',
+            'No threatening news.',
             [
                 {text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
                 {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
@@ -111,7 +107,6 @@ export default class App extends React.Component {
             {cancelable: false}
         )
     };
-
 
     fetchWeatherbyCity(city) {
         fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`).then(resp => resp.json())
@@ -137,17 +132,26 @@ export default class App extends React.Component {
                         uv: json.value,
                     })
                 })
-        });
+        }).then(() => {
+            fetch(`http://api.openweathermap.org/data/2.5/forecast?lat=${this.state.coord_lat}&lon=${this.state.coord_long}&appid=${API_KEY}&units=metric`
+            ).then(resp => resp.json())
+                .then(json => {
+                    this.setState({
+                        next_temp: json.list[13].main.temp
+                    })
+                })
+        })
     }
 
     render() {
-        const {temperature, weatherCondition, isLoading, min_temperature, max_temperature, feels_like_temp, wind_speed, uv} = this.state;
+        const {temperature, weatherCondition, isLoading, min_temperature, max_temperature, feels_like_temp, wind_speed, uv, next_temp} = this.state;
         return (
             <View style={styles.container}>
                 {isLoading ? <Text>Fetching Weather Data</Text> :
                     <Weather weather={weatherCondition} temperature={temperature} min_temperature={min_temperature}
                              max_temperature={max_temperature} feels_like_temp={feels_like_temp}
-                             wind_speed={wind_speed} bycity={this.fetchWeatherbyCity.bind(this)} uv={uv}/>
+                             wind_speed={wind_speed} bycity={this.fetchWeatherbyCity.bind(this)} uv={uv}
+                             next_temp={next_temp}/>
                 }
                 <Button onPress={this.onShare} title="Share App"/>
                 <Button title={'refresh local weather'} onPress={() => this._onRefresh()}/>
